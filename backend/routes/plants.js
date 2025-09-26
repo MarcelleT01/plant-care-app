@@ -3,16 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const Plant = require('../models/Plant');
 
-// Multer pour upload d'images
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/');
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname);
-  }
-});
-const upload = multer({ storage });
+const upload = multer({ dest: 'uploads/' });
 
 // GET - Récupérer toutes les plantes
 router.get('/', async (req, res) => {
@@ -47,16 +38,18 @@ router.post('/', upload.single('image'), async (req, res) => {
       wateringNeeds: {
         quantity: parseFloat(req.body.waterQuantity),
         frequency: parseInt(req.body.waterFrequency)
-      },
-      image: req.file ? req.file.path : null
+      }
     };
+
+    if (req.file) {
+      plantData.image = req.file.path;
+    }
 
     const plant = new Plant(plantData);
     const savedPlant = await plant.save();
     res.status(201).json(savedPlant);
   } catch (error) {
-    console.error(error);
-    res.status(400).json({ message: 'Erreur lors de l\'ajout de la plante' });
+    res.status(400).json({ message: error.message });
   }
 });
 
@@ -89,8 +82,7 @@ router.put('/:id', upload.single('image'), async (req, res) => {
 
     res.json(plant);
   } catch (error) {
-    console.error(error);
-    res.status(400).json({ message: 'Erreur lors de la modification de la plante' });
+    res.status(400).json({ message: error.message });
   }
 });
 
