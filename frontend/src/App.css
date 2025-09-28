@@ -1,25 +1,21 @@
 /* Reset de base */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; }
 
 body, html, #root, .App {
   height: 100%;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: #f9fafb;
-  color: #333;
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-text);
 }
 
 /* ===== NAVBAR ===== */
 .navbar {
-  background: linear-gradient(135deg, #2193b0, #6dd5ed);
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
   padding: 0.8rem 2rem;
   position: sticky;
   top: 0;
   z-index: 1000;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .nav-container {
@@ -59,7 +55,7 @@ body, html, #root, .App {
 }
 
 .notification-badge {
-  background: #ff5252;
+  background: var(--color-danger);
   color: #fff;
   font-size: 0.7rem;
   font-weight: bold;
@@ -67,6 +63,34 @@ body, html, #root, .App {
   padding: 0.2rem 0.5rem;
   margin-left: 0.4rem;
   vertical-align: middle;
+}
+
+/* ===== USER INFO ===== */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  color: #fff;
+}
+
+.user-info span {
+  font-weight: 500;
+}
+
+.logout-button {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 0.4rem 0.8rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+}
+
+.logout-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
 }
 
 /* ===== MAIN CONTENT ===== */

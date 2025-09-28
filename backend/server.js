@@ -30,10 +30,12 @@ const storage = multer.diskStorage({
 const upload = multer({ storage: storage });
 
 // Routes
+const authRoutes = require('./routes/auth');
 const plantRoutes = require('./routes/plants');
 const wateringRoutes = require('./routes/watering');
 const notificationRoutes = require('./routes/notifications');
 
+app.use('/api/auth', authRoutes);
 app.use('/api/plants', plantRoutes);
 app.use('/api/watering', wateringRoutes);
 app.use('/api/notifications', notificationRoutes);

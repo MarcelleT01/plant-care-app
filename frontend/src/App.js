@@ -8,22 +8,29 @@ import AddPlant from './components/AddPlant';
 import PlantDetail from './components/PlantDetail';
 import WateringHistory from './components/WateringHistory';
 import Notifications from './components/Notifications';
+import Auth from './components/Auth';
+
+// Context
+import { AuthProvider, useAuth } from './contexts/AuthContext';
 
 // Services
 import { checkWateringNotifications } from './services/api';
 
-function App() {
+function AppContent() {
   const [notifications, setNotifications] = useState([]);
+  const { user, logout } = useAuth();
 
   useEffect(() => {
-    // Vérifier les notifications au démarrage
-    checkNotifications();
-    
-    // Vérifier les notifications toutes les 30 minutes
-    const interval = setInterval(checkNotifications, 30 * 60 * 1000);
-    
-    return () => clearInterval(interval);
-  }, []);
+    // Vérifier les notifications au démarrage seulement si l'utilisateur est connecté
+    if (user) {
+      checkNotifications();
+      
+      // Vérifier les notifications toutes les 30 minutes
+      const interval = setInterval(checkNotifications, 30 * 60 * 1000);
+      
+      return () => clearInterval(interval);
+    }
+  }, [user]);
 
   const checkNotifications = async () => {
     try {
@@ -34,6 +41,16 @@ function App() {
     }
   };
 
+  // Non connecté: afficher l'écran d'authentification
+  if (!user) {
+    return (
+      <Router>
+        <Auth />
+      </Router>
+    );
+  }
+
+  // Connecté: afficher l'application protégée
   return (
     <Router>
       <div className="App">
@@ -60,6 +77,14 @@ function App() {
                   )}
                 </Link>
               </li>
+              <li className="nav-item">
+                <div className="user-info">
+                  <span>Bonjour, {user?.username}</span>
+                  <button onClick={logout} className="logout-button">
+                    Déconnexion
+                  </button>
+                </div>
+              </li>
             </ul>
           </div>
         </nav>
@@ -75,6 +100,14 @@ function App() {
         </main>
       </div>
     </Router>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

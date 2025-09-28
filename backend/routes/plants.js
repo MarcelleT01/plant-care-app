@@ -2,23 +2,24 @@ const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const Plant = require('../models/Plant');
+const auth = require('../middleware/auth');
 
 const upload = multer({ dest: 'uploads/' });
 
-// GET - Récupérer toutes les plantes
-router.get('/', async (req, res) => {
+// GET - Récupérer toutes les plantes de l'utilisateur connecté
+router.get('/', auth, async (req, res) => {
   try {
-    const plants = await Plant.find().sort({ createdAt: -1 });
+    const plants = await Plant.find({ user: req.user._id }).sort({ createdAt: -1 });
     res.json(plants);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-// GET - Récupérer une plante par ID
-router.get('/:id', async (req, res) => {
+// GET - Récupérer une plante par ID (vérifier que c'est bien la plante de l'utilisateur)
+router.get('/:id', auth, async (req, res) => {
   try {
-    const plant = await Plant.findById(req.params.id);
+    const plant = await Plant.findOne({ _id: req.params.id, user: req.user._id });
     if (!plant) {
       return res.status(404).json({ message: 'Plante non trouvée' });
     }
@@ -29,9 +30,10 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST - Ajouter une nouvelle plante
-router.post('/', upload.single('image'), async (req, res) => {
+router.post('/', auth, upload.single('image'), async (req, res) => {
   try {
     const plantData = {
+      user: req.user._id,
       name: req.body.name,
       species: req.body.species,
       purchaseDate: new Date(req.body.purchaseDate),
@@ -54,7 +56,7 @@ router.post('/', upload.single('image'), async (req, res) => {
 });
 
 // PUT - Modifier une plante
-router.put('/:id', upload.single('image'), async (req, res) => {
+router.put('/:id', auth, upload.single('image'), async (req, res) => {
   try {
     const updateData = {
       name: req.body.name,
@@ -70,8 +72,8 @@ router.put('/:id', upload.single('image'), async (req, res) => {
       updateData.image = req.file.path;
     }
 
-    const plant = await Plant.findByIdAndUpdate(
-      req.params.id,
+    const plant = await Plant.findOneAndUpdate(
+      { _id: req.params.id, user: req.user._id },
       updateData,
       { new: true }
     );
@@ -87,9 +89,9 @@ router.put('/:id', upload.single('image'), async (req, res) => {
 });
 
 // DELETE - Supprimer une plante
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
   try {
-    const plant = await Plant.findByIdAndDelete(req.params.id);
+    const plant = await Plant.findOneAndDelete({ _id: req.params.id, user: req.user._id });
     if (!plant) {
       return res.status(404).json({ message: 'Plante non trouvée' });
     }

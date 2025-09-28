@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getPlant, waterPlant, getWateringHistory } from '../services/api';
 import './PlantDetail.css';
+import ModalPortal from './ModalPortal';
 
 const PlantDetail = () => {
   const { id } = useParams();
@@ -143,53 +144,55 @@ const PlantDetail = () => {
       </div>
 
       {showWaterForm && (
-        <div className="modal-overlay">
-          <div className="modal">
-            <h3>Enregistrer l'arrosage</h3>
-            <form onSubmit={handleWatering}>
-              <div className="form-group">
-                <label>Quantité donnée (litres)</label>
-                <input
-                  type="number"
-                  value={wateringData.quantityGiven}
-                  onChange={(e) => setWateringData({
-                    ...wateringData,
-                    quantityGiven: e.target.value
-                  })}
-                  min="0.1"
-                  step="0.1"
-                  required
-                  placeholder={`Recommandé: ${plant.wateringNeeds.quantity}L`}
-                />
-              </div>
+        <ModalPortal>
+          <div className="modal-overlay">
+            <div className="modal">
+              <h3>Enregistrer l'arrosage</h3>
+              <form onSubmit={handleWatering}>
+                <div className="form-group">
+                  <label>Quantité donnée (litres)</label>
+                  <input
+                    type="number"
+                    value={wateringData.quantityGiven}
+                    onChange={(e) => setWateringData({
+                      ...wateringData,
+                      quantityGiven: e.target.value
+                    })}
+                    min="0.1"
+                    step="0.1"
+                    required
+                    placeholder={`Recommandé: ${plant.wateringNeeds.quantity}L`}
+                  />
+                </div>
 
-              <div className="form-group">
-                <label>Notes (optionnel)</label>
-                <textarea
-                  value={wateringData.notes}
-                  onChange={(e) => setWateringData({
-                    ...wateringData,
-                    notes: e.target.value
-                  })}
-                  placeholder="État de la plante, observations..."
-                />
-              </div>
+                <div className="form-group">
+                  <label>Notes (optionnel)</label>
+                  <textarea
+                    value={wateringData.notes}
+                    onChange={(e) => setWateringData({
+                      ...wateringData,
+                      notes: e.target.value
+                    })}
+                    placeholder="État de la plante, observations..."
+                  />
+                </div>
 
-              <div className="modal-actions">
-                <button 
-                  type="button" 
-                  onClick={() => setShowWaterForm(false)}
-                  className="cancel-button"
-                >
-                  Annuler
-                </button>
-                <button type="submit" className="confirm-button">
-                  Confirmer l'arrosage
-                </button>
-              </div>
-            </form>
+                <div className="modal-actions">
+                  <button 
+                    type="button" 
+                    onClick={() => setShowWaterForm(false)}
+                    className="cancel-button"
+                  >
+                    Annuler
+                  </button>
+                  <button type="submit" className="confirm-button">
+                    Confirmer l'arrosage
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
-        </div>
+        </ModalPortal>
       )}
 
       <div className="history-section">

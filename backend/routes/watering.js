@@ -2,12 +2,19 @@ const express = require('express');
 const router = express.Router();
 const Plant = require('../models/Plant');
 const WateringHistory = require('../models/WateringHistory');
+const auth = require('../middleware/auth');
 
 // POST - Marquer l'arrosage d'une plante
-router.post('/:plantId', async (req, res) => {
+router.post('/:plantId', auth, async (req, res) => {
   try {
     const { plantId } = req.params;
     const { quantityGiven, notes } = req.body;
+
+    // Vérifier que la plante appartient à l'utilisateur
+    const plant = await Plant.findOne({ _id: plantId, user: req.user._id });
+    if (!plant) {
+      return res.status(404).json({ message: 'Plante non trouvée' });
+    }
 
     // Créer l'entrée dans l'historique
     const wateringEntry = new WateringHistory({
@@ -19,11 +26,6 @@ router.post('/:plantId', async (req, res) => {
     await wateringEntry.save();
 
     // Mettre à jour la plante
-    const plant = await Plant.findById(plantId);
-    if (!plant) {
-      return res.status(404).json({ message: 'Plante non trouvée' });
-    }
-
     plant.lastWatered = new Date();
     await plant.save();
 
@@ -38,9 +40,16 @@ router.post('/:plantId', async (req, res) => {
 });
 
 // GET - Récupérer l'historique d'arrosage d'une plante
-router.get('/:plantId/history', async (req, res) => {
+router.get('/:plantId/history', auth, async (req, res) => {
   try {
     const { plantId } = req.params;
+    
+    // Vérifier que la plante appartient à l'utilisateur
+    const plant = await Plant.findOne({ _id: plantId, user: req.user._id });
+    if (!plant) {
+      return res.status(404).json({ message: 'Plante non trouvée' });
+    }
+    
     const history = await WateringHistory
       .find({ plantId })
       .sort({ wateringDate: -1 })
@@ -52,11 +61,15 @@ router.get('/:plantId/history', async (req, res) => {
   }
 });
 
-// GET - Récupérer tout l'historique d'arrosage
-router.get('/history/all', async (req, res) => {
+// GET - Récupérer tout l'historique d'arrosage de l'utilisateur
+router.get('/history/all', auth, async (req, res) => {
   try {
+    // Récupérer toutes les plantes de l'utilisateur
+    const userPlants = await Plant.find({ user: req.user._id }).select('_id');
+    const plantIds = userPlants.map(plant => plant._id);
+    
     const history = await WateringHistory
-      .find()
+      .find({ plantId: { $in: plantIds } })
       .sort({ wateringDate: -1 })
       .populate('plantId', 'name species image');
 
